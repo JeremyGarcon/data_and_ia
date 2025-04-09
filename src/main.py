@@ -1,32 +1,49 @@
-from energie import Moyen_Consommation, Total_Consommation, Consommation_Par_Habitant, Graphique_Consommation_Mensuelle
+from power import calculer_consommation_totale, graphique_consommation_mensuelle
 from meteo import meteo_display_temperature_on_data , Graphique_Température_Annuelle
 import pandas as pd
 
 
         
 def main():
-        # Consommation Moyenne
-        moyenne = Moyen_Consommation("/home/garcon/Documents/github/data_and_ia/src/data/eCO2mix_RTE_Bretagne_Annuel-Definitif_2022.csv", 'Conso totale (MWh)')
-        print(f"\n - La consommation moyenne est de {moyenne} MWh sur la Commune de Rennes")
+    
+    
+    # Power
+    
+    # File for data 
+    file_power = "/home/garcon/Documents/github/data_and_ia/src/data/eCO2mix_RTE_Bretagne_Annuel-Definitif_2022.csv"  
 
-        # Consommation Totale
-        total = Total_Consommation("/home/garcon/Documents/github/data_and_ia/src/data/eCO2mix_RTE_Bretagne_Annuel-Definitif_2022.csv", 'Conso totale (MWh)')
-        print(f"\n - La consommation totale est de {total} MWh sur la Commune de Rennes")
+    # Charger les données
+    print("Chargement des données...")
+    df = pd.read_csv(file_power, sep=',', quotechar='"', encoding='utf-8')
 
-        # Consommation par habitant
-        moyenne_par_habitant, total_par_habitant = Consommation_Par_Habitant("/home/garcon/Documents/github/data_and_ia/src/data/eCO2mix_RTE_Bretagne_Annuel-Definitif_2022.csv")
-        print(f"\n - La consommation moyenne par habitant est de {moyenne_par_habitant} MWh")
-        print(f"\n - La consommation totale par habitant est de {total_par_habitant} MWh")
-        
-        try:
-            meteo_display_temperature_on_data("/home/garcon/Documents/github/data_and_ia/src/data/donne_meteorologique.csv", "2013-04-06")
-        except FileNotFoundError:
-            print("Le fichier 'donne_meteorologique.csv' est introuvable. Veuillez vérifier le chemin ou l'emplacement du fichier.")
-            
-            
-        # Graphique_Température_Annuelle("/home/garcon/Documents/github/data_and_ia/src/data/donne_meteorologique.csv")
-        
-        Graphique_Consommation_Mensuelle("/home/garcon/Documents/github/data_and_ia/src/data/eCO2mix_RTE_Bretagne_Annuel-Definitif_2022.csv")
-        
-    # Exemple d'utilisation 
+
+    # Calculer la consommation totale
+    print("Calcul de la consommation totale...")
+    total = calculer_consommation_totale(df)
+    print(f"La consommation électrique totale en Bretagne pour 2022 est de {total:,.2f} MW")
+    
+
+    # Créer le graphique de consommation mensuelle
+    print("Création du graphique de consommation mensuelle...")
+    data_mensuelle = graphique_consommation_mensuelle(df)
+    print("Graphique sauvegardé sous 'consommation_mensuelle_bretagne_2022.png'")
+    
+    
+    # Meteo
+    
+    # File for data
+    file_meteo = "/home/garcon/Documents/github/data_and_ia/src/data/donne_meteorologique.csv"
+    
+    # Charger les données
+    print("Chargement des données météo...")
+    df_meteo = pd.read_csv(file_meteo, sep=',', quotechar='"', encoding='utf-8')
+    
+    # Afficher la température sur les données
+    print("Affichage de la température sur les données...")
+    meteo_display_temperature_on_data(df_meteo)
+    print("Graphique de température sur les données sauvegardé sous 'temperature_on_data.png'")
+    
+    
+
+    
 main()
