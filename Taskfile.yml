@@ -1,7 +1,13 @@
 version: '3'
 
 tasks:
-  hello:
+  view_power:
     cmds:
-      - echo "Hello, World!"
-    desc: Test
+      - python3 view_power.py
+    desc: Displays the energy consumption data for the year 2022 used for training supervised models
+
+
+  view_temperature:
+    cmds:
+      - python3 view_temperature.py
+    desc: Affiche les données de météo de l'année 2022 qui sont utilisées pour l'entraînement des modèles supervisés
