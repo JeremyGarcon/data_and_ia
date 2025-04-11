@@ -48,6 +48,7 @@ def analyser_temperature_par_jour(fichier_csv, colonne_date="Date", colonne_temp
         else:
             plt.title(f"Températures quotidiennes en degrés Celsius : {date_debut} à {date_fin}")
 
+        plt.title(f"Températures quotidiennes : {date_debut} à {date_fin}")
         plt.xlabel("Date")
         plt.ylabel("Température")
         plt.legend()
@@ -58,4 +59,4 @@ def analyser_temperature_par_jour(fichier_csv, colonne_date="Date", colonne_temp
     return stats_par_jour
 
 analyser_temperature_par_jour("data/donne_meteorologique.csv", 
-                              date_fin="2022-08-03T17", date_debut="2022-07-11T13", afficher_graphique=False, Kelvin=False)
+                              date_debut="2022-01-01", date_fin="2023-01-01", afficher_graphique=True, Kelvin=False)

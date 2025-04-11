@@ -64,4 +64,4 @@ def analyser_consommation_par_jour(fichier_csv, colonne_date="Date", colonne_con
 
 # Exemple d'appel
 analyser_consommation_par_jour("data/Power.csv", 
-                               date_debut="2022-01-01", date_fin="2022-01-25", afficher_graphique=True)
+                               date_debut="2022-01-01", date_fin="2022-12-30", afficher_graphique=True)
