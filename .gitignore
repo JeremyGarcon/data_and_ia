@@ -1,2 +1,5 @@
-/data/*.ccv
-/data/*.pdf
+#data/*.csv
+data/*.pdf
+data/*.xlsx
+data/*.crt
+data/*.png
