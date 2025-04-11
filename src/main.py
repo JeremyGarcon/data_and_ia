@@ -1,5 +1,5 @@
-from power import calculer_consommation_totale, graphique_consommation_mensuelle
-from meteo import meteo_display_temperature_on_data , Graphique_Température_Annuelle
+from test_power import calculer_consommation_totale, graphique_consommation_mensuelle
+from test_meteo import meteo_display_temperature_on_data , Graphique_Température_Annuelle
 import pandas as pd
 
 
