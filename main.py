@@ -1,33 +1,81 @@
 import tkinter as tk
-import tkinter as tk
-import tkinter.ttk as ttk
+from tkinter import ttk
 import sv_ttk
+# from src.app.data_view import open_data_view
+# from src.app.model_view import open_model_view
+from src.app.view_readme import view_readme
 
 
 def main():
+    
+    # Initialisation de l'application Tkinter
+    app = tk.Tk()
+    
+    # Configuration des attributs de la fenêtre
+    # Titre de la fenêtre
+    app.title("Menu Principal - Projet IA")
+
+    # Dimensions de la fenêtre
+    app.geometry("900x500")
+
+    # Autoriser le redimensionnement
+    app.resizable(True, True)
+
+    # Import d'un stylisation de sv_ttk (dark or light)
+    sv_ttk.set_theme("dark")
+
+
+    title = ttk.Label(app, text="Bienvenue dans le Projet IA", font=("Arial", 18))
+    title.pack(pady=50)
+    
+    # Gestion de l'événement de fermeture
+    app.protocol("WM_DELETE_WINDOW", lambda: on_close(app))
+
+    
+    # Boutons pour naviguer vers les différentes vues
+    
+    # Init des boutons
+    btn_data = ttk.Button(app, text="📊 Voir les Données")
+    # Ajout du bouton à la fenêtre
+    # Le bouton est centré horizontalement et a un espacement vertical
+    btn_data.pack(pady=20, ipadx=10, ipady=5)
+
+
+    btn_models = ttk.Button(app, text="🤖 Voir les Modèles")
+    btn_models.pack(pady=10, ipadx=10, ipady=5)
+    
+    btn_readme = ttk.Button(app, text="📖 Lire le README", command=lambda: view_readme)
+    btn_readme.pack(pady=10, ipadx=10, ipady=5)
+
+    # Boucle principale de l'application
+    app.mainloop()
+
+
+def on_close(app):
     """
-    Initialise la fenêtre principale de l'application, définit ses propriétés et démarre la boucle principale.
-    
+    Fonction appelée lors de la fermeture de l'application.
+    Permet de nettoyer les ressources ou d'effectuer des actions avant de quitter.
     """
+    print("Fermeture de l'application...")
+    app.destroy()  # Ferme proprement la fenêtre
 
-    app = tk.Tk() 
-    app.title("App model IA") # Définir le titre de la fenêtre
-    app.geometry("800x800") # Définir la taille de la fenêtre
-    app.resizable(True, True) # Empêcher le redimensionnement de la fenêtre
-    sv_ttk.set_theme("dark") # Définir le thème de l'application
+
+def return_to_main(app, current_frame):
+    """
+    Retourne au cadre principal depuis n'importe quel autre cadre.
     
-    main_frame = tk.Frame(app) # Créer un cadre pour les boutons
-    main_frame.pack(fill='both', expand=True)  # Utiliser expand=True pour permettre au cadre de s'étendre
+    Args:
+        app (tk.Tk): La fenêtre principale de l'application.
+        current_frame (tk.Frame): Le cadre actuel à masquer lors du retour au cadre principal.
+    """
+    current_frame.pack_forget()
+    main(app)
 
-    # Création d'un cadre pour les boutons
-    button_frame = tk.Frame(main_frame)
-    button_frame.place(relx=0.5, rely=0.5, anchor='center')  # Placer le cadre des boutons au centre
+# LAncemùent de l'application
+# Si ce fichier est exécuté directement, on lance la fonction main()
+if __name__ == "__main__":
+    main()
 
-    # Création d'un bouton "Connecter"
-    connect_button = ttk.Button(button_frame, text="Connecter", style="custom.TButton")
-    connect_button.grid(row=0, column=0, pady=(0, 10))  # Ajouter un espacement vertical (en bas)
 
-    app.mainloop() # Démarre la boucle principale de l'application
 
-    
-main()
+
