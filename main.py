@@ -1,6 +1,10 @@
+# Import des bibliothèques nécessaires
 import tkinter as tk
-from tkinter import ttk
 import sv_ttk
+
+
+# Import des modules, méthode de l'application
+from tkinter import ttk
 # from src.app.data_view import open_data_view
 # from src.app.model_view import open_model_view
 from src.app.view_readme import view_readme
