@@ -16,6 +16,16 @@ tasks:
       - bash -c "if [ -d 'env_app' ]; then source env_app/bin/activate && pip install --no-cache-dir -r requirements.txt; else echo \"L'environnement virtuel n'existe pas\"; fi"
     desc: Crée un environnement virtuel avec requirements.txt (s'il n'existe pas) et installe les dépendances.
 
+  view_power:
+    cmds:
+      - bash -c "if [ -d 'env_app' ]; then source env_app/bin/activate && python3 src/view_data/view_power.py; else echo \"L'environnement virtuel n'existe pas\"; fi"
+    desc: Active l'environnement virtuel s'il existe et exécute le script view_power.py.
+
+  view_temperature:
+    cmds:
+      - bash -c "if [ -d 'env_app' ]; then source env_app/bin/activate && python3 src/view_data/view_temperature.py; else echo \"L'environnement virtuel n'existe pas\"; fi"
+    desc: Active l'environnement virtuel s'il existe et exécute le script view_temperature.py.
+
   delete_env:
     cmds:
       - bash -c "if [ -d 'env_app' ]; then rm -rf env_app; else echo 'L'environnement python n'existe pas'; fi"
