@@ -1,9 +1,11 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 def charger_et_preparer_donnees(temp_csv, conso_csv,
                                 colonne_date="Date", colonne_temp="Temperature", colonne_conso="Consommation",
@@ -30,18 +32,14 @@ def charger_et_preparer_donnees(temp_csv, conso_csv,
     df_merged = pd.concat([temp_journalier, conso_journalier], axis=1).dropna()
     return df_merged
 
-from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-
-# ...
-
 def modele_prediction_conso(df):
     X = df[["Temp_Moy"]]
     y = df["Conso_Moy"]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    modele = LinearRegression()
+    # Utilisation d'un modèle Random Forest
+    modele = RandomForestRegressor(n_estimators=100, random_state=42)
     modele.fit(X_train, y_train)
 
     y_pred = modele.predict(X_test)
@@ -66,7 +64,6 @@ def modele_prediction_conso(df):
     plt.tight_layout()
     plt.show()
     
-    
     # === Graphique : prédictions vs réalité ===
     plt.figure(figsize=(6, 6))
     plt.scatter(y_test, y_pred, alpha=0.7, edgecolors="k")
@@ -84,16 +81,14 @@ def modele_prediction_conso(df):
     erreur_relative_pct = (erreur_absolue / y_test) * 100
     print(f"Erreur moyenne relative : {erreur_relative_pct.mean():.2f}%")
 
-
     return modele
-
 
 # === Utilisation ===
 df_fusionne = charger_et_preparer_donnees(
     temp_csv="/home/garcon/Documents/github/data_and_ia/data/donne_meteorologique.csv",
     conso_csv="/home/garcon/Documents/github/data_and_ia/data/Power.csv",
     date_debut="2022-01-01",
-    date_fin="2022-09-25"
+    date_fin="2022-01-25"
 )
 
 modele = modele_prediction_conso(df_fusionne)

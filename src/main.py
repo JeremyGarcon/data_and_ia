@@ -44,6 +44,5 @@ def main():
     print("Graphique de température sur les données sauvegardé sous 'temperature_on_data.png'")
     
     
-
     
 main()

@@ -1,27 +1,29 @@
 import pandas as pd
-import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
+from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
 import numpy as np
+
+import matplotlib.pyplot as plt
 
 def charger_et_preparer_donnees(temp_csv, conso_csv,
                                 colonne_date="Date", colonne_temp="Temperature", colonne_conso="Consommation",
                                 date_debut="2022-01-01", date_fin="2022-09-25"):
     # Charger température
-    df_temp = pd.read_csv(temp_csv, usecols=[colonne_date, colonne_temp])
-    df_temp[colonne_date] = pd.to_datetime(df_temp[colonne_date], utc=True)
+    df_temp = pd.read_csv(temp_csv)
+    df_temp[colonne_date] = pd.to_datetime(df_temp[colonne_date], errors="coerce", utc=True)
     df_temp = df_temp[(df_temp[colonne_date] >= date_debut) & (df_temp[colonne_date] < date_fin)]
     df_temp.set_index(colonne_date, inplace=True)
-    df_temp[colonne_temp] = df_temp[colonne_temp] - 273.15  # Convertir Kelvin en Celsius si nécessaire
+    if df_temp[colonne_temp].max() > 100:  # Vérifie si les températures sont en Kelvin
+        df_temp[colonne_temp] = df_temp[colonne_temp]   # Convertir Kelvin en Celsius
     temp_journalier = df_temp[colonne_temp].resample("D").mean().rename("Temp_Moy")
 
     # Charger consommation
-    df_conso = pd.read_csv(conso_csv, usecols=[colonne_date, colonne_conso], sep=",", on_bad_lines="skip")
+    df_conso = pd.read_csv(conso_csv)
     df_conso[colonne_date] = pd.to_datetime(df_conso[colonne_date], errors="coerce", utc=True)
     df_conso.dropna(subset=[colonne_date, colonne_conso], inplace=True)
     df_conso[colonne_conso] = pd.to_numeric(df_conso[colonne_conso], errors="coerce")
-    df_conso.dropna(subset=[colonne_conso], inplace=True)
     df_conso = df_conso[(df_conso[colonne_date] >= date_debut) & (df_conso[colonne_date] < date_fin)]
     df_conso.set_index(colonne_date, inplace=True)
     conso_journalier = df_conso[colonne_conso].resample("D").mean().rename("Conso_Moy")
@@ -30,29 +32,40 @@ def charger_et_preparer_donnees(temp_csv, conso_csv,
     df_merged = pd.concat([temp_journalier, conso_journalier], axis=1).dropna()
     return df_merged
 
-from sklearn.metrics import mean_squared_error, r2_score
-import numpy as np
-
-# ...
-
 def modele_prediction_conso(df):
     X = df[["Temp_Moy"]]
     y = df["Conso_Moy"]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    modele = LinearRegression()
-    modele.fit(X_train, y_train)
+    # Comparaison de plusieurs modèles
+    models = {
+        "Random Forest": RandomForestRegressor(n_estimators=100, random_state=42),
+        "Gradient Boosting": GradientBoostingRegressor(n_estimators=100, random_state=42),
+        "Linear Regression": LinearRegression()
+    }
 
-    y_pred = modele.predict(X_test)
+    best_model = None
+    best_r2 = -np.inf
 
-    # Évaluation
-    r2 = r2_score(y_test, y_pred)
-    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        y_pred = model.predict(X_test)
+        r2 = r2_score(y_test, y_pred)
+        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+        print(f"Modèle : {name}")
+        print(f"- Coefficient R² : {r2:.2f}")
+        print(f"- RMSE : {rmse:.2f} kWh\n")
 
-    print("Évaluation du modèle :")
-    print(f"- Coefficient R² : {r2:.2f}")
-    print(f"- RMSE : {rmse:.2f} kWh")
+        if r2 > best_r2:
+            best_r2 = r2
+            best_model = model
+
+    # Évaluation du meilleur modèle
+    y_pred = best_model.predict(X_test)
+    print("Meilleur modèle sélectionné :")
+    print(f"- Coefficient R² : {best_r2:.2f}")
+    print(f"- RMSE : {np.sqrt(mean_squared_error(y_test, y_pred)):.2f} kWh")
 
     # Affichage du graphe
     plt.figure(figsize=(10, 5))
@@ -65,7 +78,6 @@ def modele_prediction_conso(df):
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-    
     
     # === Graphique : prédictions vs réalité ===
     plt.figure(figsize=(6, 6))
@@ -84,9 +96,7 @@ def modele_prediction_conso(df):
     erreur_relative_pct = (erreur_absolue / y_test) * 100
     print(f"Erreur moyenne relative : {erreur_relative_pct.mean():.2f}%")
 
-
-    return modele
-
+    return best_model
 
 # === Utilisation ===
 df_fusionne = charger_et_preparer_donnees(

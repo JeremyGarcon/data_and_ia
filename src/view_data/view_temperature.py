@@ -1,8 +1,11 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-def analyser_temperature_par_jour(fichier_csv, colonne_date="Date", colonne_temp="Temperature",
-                                   date_debut="2022-08-01", date_fin="2022-08-25", afficher_graphique=True, Kelvin=True):
+
+def view_temperature(fichier_csv, colonne_date="Date", colonne_temp="Temperature",
+                                   date_debut="2022-01-01", date_fin="2022-09-25", 
+                                   afficher_graphique=False, Kelvin=True
+                                   ):
     """
     Analyse les températures journalières (moyenne, min, max) pour une période donnée.
 
@@ -12,7 +15,7 @@ def analyser_temperature_par_jour(fichier_csv, colonne_date="Date", colonne_temp
     :param date_debut: Date de début (format AAAA-MM-JJ)
     :param date_fin: Date de fin (exclus, format AAAA-MM-JJ)
     :param afficher_graphique: True pour afficher un graphique
-    :return: DataFrame avec les stats par jour
+    :return: DataFrame avec les stats par jour et éventuellement un graphique matplotlib
     """
 
     # 1. Charger les données
@@ -28,35 +31,34 @@ def analyser_temperature_par_jour(fichier_csv, colonne_date="Date", colonne_temp
 
     # 4. Grouper par jour
     df_filtered.set_index(colonne_date, inplace=True)
-    if Kelvin == False:
+    if not Kelvin:
         df_filtered.loc[:, colonne_temp] = df_filtered[colonne_temp] - 273.15
 
     stats_par_jour = df_filtered[colonne_temp].resample("D").agg(["mean", "min", "max"])
 
-    # 5. Afficher les stats
-    print(f"Statistiques de température du {date_debut} au {date_fin} :")
-    print(stats_par_jour)
+    # 5. Afficher les stats dans la console
+    # print(f"Statistiques de température du {date_debut} au {date_fin} :")
+    # print(stats_par_jour)
 
     # 6. Graphique
     if afficher_graphique:
-        plt.figure(figsize=(12, 6))
-        stats_par_jour["mean"].plot(label="Moyen", marker="o", linestyle="-")
-        stats_par_jour["min"].plot(label="Min", linestyle='--')
-        stats_par_jour["max"].plot(label="Max", linestyle='--')
+        fig, ax = plt.subplots(figsize=(12, 6))
+        stats_par_jour["mean"].plot(ax=ax, label="Moyenne", marker="o", linestyle="-")
+        stats_par_jour["min"].plot(ax=ax, label="Min", linestyle='--')
+        stats_par_jour["max"].plot(ax=ax, label="Max", linestyle='--')
+
         if Kelvin:
-            plt.title(f"Températures quotidiennes en degrés Kelvin : {date_debut} à {date_fin}")
+            ax.set_title(f"Températures quotidiennes en degrés Kelvin : {date_debut} à {date_fin}")
         else:
-            plt.title(f"Températures quotidiennes en degrés Celsius : {date_debut} à {date_fin}")
+            ax.set_title(f"Températures quotidiennes en degrés Celsius : {date_debut} à {date_fin}")
 
-        plt.title(f"Températures quotidiennes : {date_debut} à {date_fin}")
-        plt.xlabel("Date")
-        plt.ylabel("Température")
-        plt.legend()
-        plt.grid(True)
+        ax.set_xlabel("Date")
+        ax.set_ylabel("Température")
+        ax.legend()
+        ax.grid(True)
         plt.tight_layout()
-        plt.show()
 
-    return stats_par_jour
-
-analyser_temperature_par_jour("data/donne_meteorologique.csv", 
-                              date_debut="2022-01-01", date_fin="2023-01-01", afficher_graphique=True, Kelvin=False)
+        # Retourner la figure et les statistiques par jour
+        return stats_par_jour, fig
+    else:
+        return stats_par_jour, None
