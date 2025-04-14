@@ -1,3 +1,5 @@
+# filepath: data_and_ia/src/app/model_view.py
+
 from tkinter import ttk
 from src.app.model_tabs import create_model_tab
 from src.app.plots import dummy_plot
