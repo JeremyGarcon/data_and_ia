@@ -1,7 +1,5 @@
 # filepath: data_and_ia/src/app/view_readme.py
 
-
-
 def read_markdown_file(markdown_file):
     """
     Reads the content of a Markdown file.

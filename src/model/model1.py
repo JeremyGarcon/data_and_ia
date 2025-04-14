@@ -57,7 +57,7 @@ def modele_prediction_conso(df):
     # Affichage du graphe
     plt.figure(figsize=(10, 5))
     plt.plot(y_test.index, y_test, label="Conso Réelle", marker="o")
-    plt.plot(y_test.index, y_pred, label="Conso Prédite", linestyle="--", marker="x")
+    plt.plot(y_test.index, y_pred, label="Conso Prédite", linestyle=None, marker=None)
     plt.title("Prédiction de la consommation énergétique à partir de la température")
     plt.xlabel("Date")
     plt.ylabel("Consommation (kWh)")
@@ -78,13 +78,7 @@ def modele_prediction_conso(df):
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-    # Optionnel : afficher l’erreur moyenne en pourcentage
-    erreur_absolue = abs(y_test - y_pred)
-    erreur_relative_pct = (erreur_absolue / y_test) * 100
-    print(f"Erreur moyenne relative : {erreur_relative_pct.mean():.2f}%")
-
-
+    
     return modele
 
 

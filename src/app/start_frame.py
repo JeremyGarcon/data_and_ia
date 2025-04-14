@@ -1,4 +1,4 @@
-# filepath: /home/garcon/Documents/github/data_and_ia/src/app/start_frame.py
+# filepath: data_and_ia/src/app/start_frame.py
 
 # === Import des bibliothèques nécessaires ===
 import tkinter as tk
@@ -148,11 +148,3 @@ def view_readme(app, main_frame, markdown_file):
     # Ensure the main frame is visible
     readme_frame.pack(fill="both", expand=True)
 
-
-
-# Ce fichier contient le code pour initialiser et configurer l'interface principale d'une application Tkinter. 
-# Il inclut des fonctions pour afficher différents cadres et onglets, ainsi qu'un menu principal avec des boutons pour naviguer entre les fonctionnalités.
-# ### Explication des paramètres utilisés dans le code :
-# - `padx` et `pady` : Ces paramètres sont utilisés pour ajouter un espace (padding) horizontal (`padx`) ou vertical (`pady`) autour d'un widget. Cela permet d'améliorer l'espacement et l'esthétique de l'interface utilisateur.
-# - `anchor` : Ce paramètre détermine l'alignement d'un widget dans son conteneur. Par exemple, `anchor="center"` centre le widget, tandis que d'autres valeurs comme `anchor="w"` alignent le widget à gauche.
-# - `relx` et `rely` : Ces paramètres sont utilisés avec la méthode `place()` pour positionner un widget en fonction de proportions relatives à la taille de son conteneur. Par exemple, `relx=0.5` place le widget au milieu horizontalement, et `rely=0.5` au milieu verticalement.

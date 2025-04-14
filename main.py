@@ -5,8 +5,6 @@ import sv_ttk
 
 # Import des modules de l'application
 from src.app.start_frame import start_frame
-from tkinter import ttk
-
 
 # === Fonctions ===
 def main():

@@ -1,5 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
+
 def analyser_consommation_par_jour(fichier_csv, colonne_date="Date", colonne_conso="Consommation",
                                    date_debut="2013-04-01", date_fin="2013-05-01", afficher_graphique=True):
     """
