@@ -5,6 +5,9 @@ from tkinter import messagebox
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
+from src.app.methode.update_treeview import update_treeview
+from src.app.methode.clear_content import clear_content
+
 
 def create_tab_power(notebook):
     tab_data = ttk.Frame(notebook)
@@ -14,7 +17,6 @@ def create_tab_power(notebook):
     if not os.path.exists(file_path):
         messagebox.showerror("Erreur", "Le fichier de données Power n'existe pas.")
         return
-    file_path = "data/Power.csv"
     data = pd.read_csv(file_path, delimiter=",", usecols=range(7))
 
     # Barre de recherche
@@ -24,6 +26,7 @@ def create_tab_power(notebook):
     search_label = ttk.Label(search_frame, text="Rechercher par date (Calendrier) :")
     search_label.pack(side="left", padx=5)
 
+    # Doc : https://www.askpython.com/python-modules/tkinter/stringvar-with-examples
     search_var = StringVar()
     date_entry = DateEntry(search_frame, textvariable=search_var, date_pattern="yyyy-mm-dd")
     date_entry.pack(side="left", padx=5)
@@ -32,34 +35,6 @@ def create_tab_power(notebook):
     content_frame = ttk.Frame(tab_data)
     content_frame.pack(fill="both", expand=True)
 
-    def clear_content():
-        """
-        Supprime tous les widgets de `content_frame`.
-
-        Cette fonction parcourt les widgets enfants de `content_frame`
-        et les détruit, effaçant ainsi le contenu du cadre.
-
-        Exemple :
-            clear_content()  # Efface tous les widgets de content_frame.
-        """
-        for widget in content_frame.winfo_children():
-            widget.destroy()
-
-    def update_treeview(dataframe):
-        clear_content()
-        # Doc : https://blog.alphorm.com/utilisation-widget-treeview-tkinter for widget
-        # Doc : 
-        tree = ttk.Treeview(content_frame, columns=list(dataframe.columns), show="headings")
-        for col in dataframe.columns:
-            #La méthode `tree.heading(col, text=col)` (ligne 66) définit le texte de l'en-tête de chaque colonne
-            tree.heading(col, text=col)
-            # La méthode `tree.column(col, width=100)` (ligne 58) définit la largeur de chaque colonne à 100 pixels.
-            tree.column(col, width=100)
-        # La méthode tree.insert("", "end", values=list(row)) (ligne 60) insère chaque ligne de données dans le widget Treeview.
-        for _, row in dataframe.iterrows():
-            # _ ignore le index non utilisé
-            tree.insert("", "end", values=list(row))
-        tree.pack(fill="both", expand=True)
 
     def search_data():
         # Récupère la date sélectionnée dans la barre de recherche
@@ -69,14 +44,16 @@ def create_tab_power(notebook):
         filtered_data = data[data['Date'] == selected_date]
         
         # Met à jour l'affichage du tableau avec les données filtrées
-        update_treeview(filtered_data)
+        update_treeview(filtered_data, content_frame)
         
     # Affiche le graphique de consommation énergétique(avec )
-    def display_data_power():
-        clear_content()
+    def display_data_power(content_frame):
+        clear_content(content_frame)
         try:
             Colonne_date = "Date"
             Colonne_conso = "Consommation"
+            Title = "Consommation énergétique"
+            ylabel = "Consommation énergétique"
 
             temp_data = data.copy()
             temp_data[Colonne_date] = pd.to_datetime(temp_data[Colonne_date], errors="coerce", utc=True)
@@ -86,34 +63,47 @@ def create_tab_power(notebook):
 
             if data_for_day.empty:
                 messagebox.showinfo("Information", "Aucune donnée trouvée.")
-                update_treeview(data)
+                update_treeview(data, content_frame)
                 return
-
-            fig, ax = plt.subplots(figsize=(12, 6))
-            data_for_day["mean"].plot(ax=ax, label="Moyenne")
-            ax.set_title("Consommation énergétique quotidienne")
-            ax.set_xlabel("Date")
-            ax.set_ylabel("Consommation énergétique")
+            # Doc : https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.subplots.html#
+            fig, ax = plt.subplots(figsize=(12, 6)) # Crée une figure et un axe
+            # Doc : https://matplotlib.org/stable/api/_as_gen/matplotlib.axes.Axes.plot.html
+            data_for_day["mean"].plot(ax=ax, label="Moyenne") # Moyenne
+            ax.set_title(Title) # Titre du graphique
+            ax.set_xlabel(Colonne_date) # Titre de l'axe des x
+            ax.set_ylabel(ylabel) # Titre de l'axe des y
             ax.legend()
-            ax.grid(True)
+            ax.grid(True) # Affiche une grille sur le graphique
 
+            # Crée un widget pour afficher le graphique dans le cadre, par défaut plt affiche dans une nouvelle fenêtre
             canvas = FigureCanvasTkAgg(fig, master=content_frame)
             canvas.draw()
             canvas.get_tk_widget().pack(fill="both", expand=True)
 
         except Exception as e:
             messagebox.showerror("Erreur", f"Erreur lors de la création du graphique : {e}")
-            update_treeview(data)
+            update_treeview(data, content_frame)
 
     # Boutons
-    search_button = ttk.Button(search_frame, text="Rechercher", command=search_data)
+    search_button = ttk.Button(search_frame, text="Rechercher", command=lambda:search_data)
     search_button.pack(side="left", padx=5)
 
-    graphique_button = ttk.Button(search_frame, text="Graphique", command=display_data_power)
+    graphique_button = ttk.Button(search_frame, text="Graphique", command=lambda:display_data_power(content_frame))
     graphique_button.pack(side="left", padx=5)
 
-    back_to_table_button = ttk.Button(search_frame, text="Tableau", command=lambda: update_treeview(data))
+    back_to_table_button = ttk.Button(search_frame, text="Tableau", command=lambda: update_treeview(data, content_frame))
     back_to_table_button.pack(side="left", padx=5)
 
     # Affichage initial
-    update_treeview(data)
+    update_treeview(data, content_frame)
+
+        # Doc https://matplotlib.org/stable/api/figure_api.html
+        # plt.figure(figsize=(12, 6))
+        # data_for_day["mean"].plot(label="Moyenne")
+        # plt.title(f"Consommation énergétique quotidienne ")
+        # plt.xlabel("Date")
+        # plt.ylabel("Consommation énergétique")
+        # plt.legend()
+        # plt.grid(True)
+        # plt.tight_layout()
+        # plt.show()

@@ -1,5 +1,8 @@
 # filepath: data_and_ia/src/app/view_readme.py
 
+
+from tkinter import messagebox
+
 def read_markdown_file(markdown_file):
     """
     Reads the content of a Markdown file.
@@ -10,7 +13,8 @@ def read_markdown_file(markdown_file):
     try:
         with open(markdown_file, "r", encoding="utf-8") as f:
             return f.read()
-    except FileNotFoundError:
+    except Exception as e:
         print(f"Error: File not found: {markdown_file}")
-        return "# Error\nFile not found."
+        messagebox.showerror("Error", f"File not found: {markdown_file}")
+        return 
 

@@ -63,3 +63,6 @@ def Graphique_Température_Annuelle(input_file):
             print("La colonne 'Température (°C)' est absente du fichier.")
     except Exception as e:
         print(f"Une erreur s'est produite : {e}")
+        
+meteo_display_temperature_on_data("data/donne_meteorologique.csv", "2022-08-01T12")
+Graphique_Température_Annuelle("data/donne_meteorologique.csv")

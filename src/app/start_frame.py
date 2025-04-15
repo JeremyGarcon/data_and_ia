@@ -32,7 +32,7 @@ def start_frame(app):
     button_container.place(relx=0.5, rely=0.5, anchor="center")
     
     
-    # Tail des Boutton
+    # Taille des Bouttons
     with_button = 25
     heigh_button = 15
 
@@ -45,12 +45,11 @@ def start_frame(app):
     )
     btn_data.pack(anchor="center", pady=10)
 
-    # Bouton pour voir les modèles (fonctionnalité à implémenter)
+    # Bouton pour voir les modèles
     btn_models = ttk.Button(
         button_container,
         width=with_button,
         text="🤖 Voir les Modèles",
-        # command=lambda: view_models(app, main_frame)  # À implémenter
     )
     btn_models.pack(anchor="center", pady=10)
 
@@ -75,6 +74,7 @@ def view_data(app, main_frame):
     data_frame.pack(fill="both", expand=True)
 
     # Créer un notebook (onglets)
+    # Doc : https://blog.alphorm.com/utiliser-widget-notebook-tkinter
     notebook = ttk.Notebook(data_frame)
     notebook.pack(fill='both', expand=True)
 
@@ -115,7 +115,7 @@ def view_readme(app, main_frame, markdown_file):
     # Configure the main window
     app.title("README - AI Project")
     app.geometry("900x500")
-    app.resizable(False, False)
+    app.resizable(True, True)
     
     
     # Read the content of the Markdown file
@@ -137,8 +137,7 @@ def view_readme(app, main_frame, markdown_file):
     # Create an HTMLLabel widget to display the HTML content
     html_label = HTMLLabel(
     readme_frame,
-    html=html_content,
-    )
+    html=html_content)
     html_label.pack(fill="both", expand=True, padx=10, pady=10)
     
     # Bouton retour
