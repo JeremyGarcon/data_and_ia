@@ -13,6 +13,7 @@ from tkhtmlview import HTMLLabel
 from src.app.data_meteo import create_tab_meteo
 from src.app.data_power import create_tab_power
 from src.app.view_readme import read_markdown_file
+# from src.app.model_view import open_model_view
 
 
 # === Fonctions ===
@@ -50,6 +51,7 @@ def start_frame(app):
         button_container,
         width=with_button,
         text="🤖 Voir les Modèles",
+        command=lambda: open_model_view(app, main_frame),
     )
     btn_models.pack(anchor="center", pady=10)
 
@@ -89,6 +91,33 @@ def view_data(app, main_frame):
     
     # tabs power
     create_tab_power(notebook)
+    
+    
+    
+def open_model_view(app, main_frame):
+    
+    main_frame.pack_forget()
+
+    app.title("Visualisation des Modèles")
+    app.geometry("900x500")
+    app.resizable(False, False)
+    
+    # Créer un cadre pour le contenu
+    model_frame = tk.Frame(app)
+    model_frame.pack(fill="both", expand=True)
+
+    # Créer un notebook (onglets)
+    notebook = ttk.Notebook(model_frame)
+    notebook.pack(fill='both', expand=True)
+
+   
+
+    # Bouton retour
+    back_btn = ttk.Button(model_frame, text="⬅ Retour au menu principal", command=lambda: return_to_main(app, model_frame))
+    back_btn.pack(pady=15)
+
+    
+    
     
 
 def return_to_main(app, current_frame):
