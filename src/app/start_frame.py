@@ -6,13 +6,14 @@ from tkinter import ttk
 import markdown
 import tkinter as tk
 from tkhtmlview import HTMLLabel
-
+from PIL import Image, ImageTk
 
 
 # === Import des modules de l'application ===
 from src.app.data_meteo import create_tab_meteo
 from src.app.data_power import create_tab_power
 from src.app.view_readme import read_markdown_file
+from src.app.model_view import view_model_1
 # from src.app.model_view import open_model_view
 
 
@@ -28,14 +29,24 @@ def start_frame(app):
     main_frame = tk.Frame(app)
     main_frame.pack(fill="both", expand=True)
 
+    # Charger l'image avec Pillow
+    image = Image.open("src/img/background.jpg")
+    background_image = ImageTk.PhotoImage(image)
+    
+    app.title("Menu Principal - Projet IA")
+    app.geometry("625x400")  
+
+    # Utiliser l'image dans Tkinter
+    background_label = tk.Label(main_frame, image=background_image)
+    background_label.image = background_image  # Prévenir le garbage collection
+    background_label.place(relwidth=1, relheight=1)
+
     # Créer un conteneur pour centrer les boutons verticalement
-    button_container = tk.Frame(main_frame)
+    button_container = tk.Frame(main_frame)  # Ajouter un fond blanc pour les boutons
     button_container.place(relx=0.5, rely=0.5, anchor="center")
     
-    
     # Taille des Bouttons
-    with_button = 25
-    heigh_button = 15
+    with_button = 25    
 
     # Bouton pour voir les données
     btn_data = ttk.Button(
@@ -44,7 +55,7 @@ def start_frame(app):
         width=with_button,
         command=lambda: view_data(app, main_frame),
     )
-    btn_data.pack(anchor="center", pady=10)
+    btn_data.pack()  # Pas d'espacement vertical entre les boutons
 
     # Bouton pour voir les modèles
     btn_models = ttk.Button(
@@ -53,7 +64,7 @@ def start_frame(app):
         text="🤖 Voir les Modèles",
         command=lambda: open_model_view(app, main_frame),
     )
-    btn_models.pack(anchor="center", pady=10)
+    btn_models.pack()  # Pas d'espacement vertical entre les boutons
 
     # Bouton pour lire le README
     btn_readme = ttk.Button(
@@ -62,13 +73,14 @@ def start_frame(app):
         text="📖 Lire le README",
         command=lambda: view_readme(app, main_frame, "README.md"),
     )
-    btn_readme.pack(anchor="center", pady=10)
+    btn_readme.pack()  # Pas d'espacement vertical entre les boutons
+
 
 def view_data(app, main_frame):
     # Configure the main window
     app.title("DATA - AI Project")
-    app.geometry("900x500")
-    app.resizable(False, False)
+    app.geometry("1024x820")
+    app.resizable(True, True)
 
     main_frame.pack_forget()
 
@@ -84,7 +96,6 @@ def view_data(app, main_frame):
     # tabs meteo
     create_tab_meteo(notebook)
     
-    
     # Bouton retour
     back_btn = ttk.Button(data_frame, text="⬅ Retour au menu principal", command=lambda: return_to_main(app, data_frame))
     back_btn.pack(pady=15)
@@ -95,26 +106,29 @@ def view_data(app, main_frame):
     
     
 def open_model_view(app, main_frame):
-    
     main_frame.pack_forget()
 
     app.title("Visualisation des Modèles")
-    app.geometry("900x500")
+    app.geometry("1024x768")
     app.resizable(False, False)
-    
-    # Créer un cadre pour le contenu
+
     model_frame = tk.Frame(app)
     model_frame.pack(fill="both", expand=True)
 
-    # Créer un notebook (onglets)
     notebook = ttk.Notebook(model_frame)
     notebook.pack(fill='both', expand=True)
 
-   
+    # Onglet modèle IA
+    tab_model = ttk.Frame(notebook)
+    notebook.add(tab_model, text="Modèle IA")
+
+    # Affiche le modèle dans l'onglet
+    view_model_1(tab_model)
 
     # Bouton retour
     back_btn = ttk.Button(model_frame, text="⬅ Retour au menu principal", command=lambda: return_to_main(app, model_frame))
     back_btn.pack(pady=15)
+
 
     
     

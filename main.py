@@ -17,7 +17,17 @@ def main():
 
     # Configuration des attributs de la fenêtre
     app.title("Menu Principal - Projet IA")
-    app.geometry("900x500")
+    
+    screen_width = app.winfo_screenwidth()
+    screen_height = app.winfo_screenheight()
+    
+    window_width = 625
+    window_height = 400
+    position_x = (screen_width - window_width) // 2
+    position_y = (screen_height - window_height) // 2
+
+    # Appliquer la position centrée
+    app.geometry(f"{window_width}x{window_height}+{position_x}+{position_y}")
     app.resizable(True, True)
 
     # Gestion de l'événement de fermeture

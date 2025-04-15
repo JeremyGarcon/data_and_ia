@@ -46,7 +46,7 @@ def create_tab_power(notebook):
         # Met à jour l'affichage du tableau avec les données filtrées
         update_treeview(filtered_data, content_frame)
         
-    # Affiche le graphique de consommation énergétique(avec )
+    
     def display_data_power(content_frame):
         clear_content(content_frame)
         try:
