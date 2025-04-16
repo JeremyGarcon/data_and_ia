@@ -32,3 +32,11 @@ Activer l’environnement :
 Une fois l’environnement activé :
 
 python src/modele-marya/modele1.py
+
+🎯 Objectifs futurs:
+
+Ajouter des modèles avancés (forêts aléatoires, réseaux neuronaux).
+Intégrer une interface utilisateur Web (React).
+Étendre l'analyse à d'autres périodes et intégrer plus de données météorologiques.
+Ajouter une base de données PostgreSQL.
+Ce projet est une première étape pour démontrer l'utilisation de l'IA dans l'analyse des données énergétiques et météorologiques.
