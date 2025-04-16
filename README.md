@@ -26,4 +26,9 @@ Modifier
 python -m venv env
 
 Activer l’environnement :
-.\env\Scripts\activate  
+.\env\Scripts\activate 
+
+▶️ Exécution
+Une fois l’environnement activé :
+
+python src/modele-marya/modele1.py
