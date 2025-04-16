@@ -1,104 +1,89 @@
-from sklearn.ensemble import RandomForestRegressor
-
-
-# === Import des bibliothèques nécessaires ===
-import pandas as pd
-import numpy as np
+import pandas as pd # type: ignore
 import matplotlib.pyplot as plt
-from tkinter import ttk, messagebox
-from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error, r2_score   
+import numpy as np
 
-# === Import des modules de l'application ===
-from src.app.methode.clear_content import clear_content 
+# === 1. Charger et préparer les données ===
+def charger_et_preparer_donnees(temp_csv, conso_csv,
+                                colonne_date="Date", colonne_temp="Temperature", colonne_conso="Consommation",
+                                date_debut="2022-01-01", date_fin="2022-09-30"):
+    # Charger température
+    df_temp = pd.read_csv(temp_csv, usecols=[colonne_date, colonne_temp])
+    df_temp[colonne_date] = pd.to_datetime(df_temp[colonne_date], utc=True)
+    df_temp = df_temp[(df_temp[colonne_date] >= date_debut) & (df_temp[colonne_date] < date_fin)]
+    df_temp[colonne_temp] = df_temp[colonne_temp] - 273.15  # Kelvin -> Celsius
+    df_temp.set_index(colonne_date, inplace=True)
+    df_temp.sort_index(inplace=True)
 
+    # Charger consommation
+    df_conso = pd.read_csv(conso_csv, usecols=[colonne_date, colonne_conso], sep=",", on_bad_lines="skip")
+    df_conso[colonne_date] = pd.to_datetime(df_conso[colonne_date], utc=True, errors="coerce")
+    df_conso.dropna(subset=[colonne_date, colonne_conso], inplace=True)
+    df_conso[colonne_conso] = pd.to_numeric(df_conso[colonne_conso], errors="coerce")
+    df_conso.dropna(subset=[colonne_conso], inplace=True)
+    df_conso = df_conso[(df_conso[colonne_date] >= date_debut) & (df_conso[colonne_date] < date_fin)]
+    df_conso.set_index(colonne_date, inplace=True)
+    df_conso.sort_index(inplace=True)
 
+    # Fusion fine (alignement temporel précis)
+    df_merged = pd.merge_asof(
+        df_conso, df_temp,
+        left_index=True, right_index=True,
+        direction='nearest',
+        tolerance=pd.Timedelta("30min")  # ou autre selon la fréquence des mesures
+    ).dropna()
 
+    df_merged.rename(columns={colonne_temp: "Temp_Moy", colonne_conso: "Conso_Moy"}, inplace=True)
 
-def view_model_3(frame):
-    """
-    Affiche un modèle Random Forest (modèle plus avancé) dans l'interface Tkinter.
+    return df_merged
 
-    Args:
-        frame (tk.Frame): Le conteneur Tkinter où le modèle sera affiché.
-    """
-    # Nettoyer l'interface
-    clear_content(frame)
+# === 2. Créer et entraîner le modèle ===
+def entrainer_modele(df):
+    X = df[["Temp_Moy"]]
+    y = df["Conso_Moy"]
 
-    try:
-        # Charger les données enrichies
-        df = load_data_rf()
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # === Préparation des données ===
-        X = df[["Temp_Moy", "Temp_Moy_3j", "Jour_semaine", "Mois", "Conso_Lag1"]]
-        y = df["Conso_Moy"]
+    modele = LinearRegression()
+    modele.fit(X_train, y_train)
+    y_pred = modele.predict(X_test)
 
-        # Split
-        X_train, X_test, y_train, y_test = train_test_split(
-            X, y, test_size=0.2, random_state=42
-        )
+    r2 = r2_score(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
-        # Modèle Random Forest
-        modele = RandomForestRegressor(n_estimators=100, random_state=42)
-        modele.fit(X_train, y_train)
-        y_pred = modele.predict(X_test)
+    print("\n📊 Évaluation du modèle :")
+    print(f"➡️ R² : {r2:.2f}")
+    print(f"➡️ RMSE : {rmse:.2f} kWh")
 
-        # Métriques
-        r2 = r2_score(y_test, y_pred)
-        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
+    return y_test, y_pred
 
-        # Affichage des scores
-        perf_label = ttk.Label(
-            frame,
-            text=f"Modèle Random Forest\nR² = {r2:.2f} | RMSE = {rmse:.2f} kWh",
-            font=("Arial", 12, "bold")
-        )
-        perf_label.pack(pady=10)
+# === 3. Visualisation ===
+def afficher_resultats(y_test, y_pred):
+    # Scatter Réel vs Prédit
+    plt.figure(figsize=(6, 6))
+    plt.scatter(y_test, y_pred, alpha=0.7, edgecolors="k", color="blue")
+    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", lw=2, label="Idéal : y = x")
+    plt.xlabel("Consommation réelle (kWh)")
+    plt.ylabel("Consommation prédite (kWh)")
+    plt.title("Réel vs Prédit")
+    plt.legend()
+    plt.grid(True)
+    plt.tight_layout()
+    plt.show()
 
-        # Graphique
-        fig, ax = plt.subplots(figsize=(6, 6))
-        ax.scatter(y_test, y_pred, alpha=0.7, edgecolors="k", color="green")
-        ax.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", lw=2)
-        ax.set_xlabel("Consommation réelle (kWh)")
-        ax.set_ylabel("Consommation prédite (kWh)")
-        ax.set_title("Réel vs Prédit (Random Forest)")
-        ax.grid(True)
+# === 4. Pipeline complet ===
+def pipeline():
+    df = charger_et_preparer_donnees(
+        temp_csv="donne_meteorologique.csv",
+        conso_csv="Power.csv",
+        date_debut="2022-01-01",
+        date_fin="2022-09-25"
+    )
 
-        # Affichage dans Tkinter
-        plt.tight_layout()
-        canvas = FigureCanvasTkAgg(fig, master=frame)
-        canvas.draw()
-        canvas.get_tk_widget().pack(fill="both", expand=True)
+    y_test, y_pred = entrainer_modele(df)
+    afficher_resultats(y_test, y_pred)
 
-    except Exception as e:
-        messagebox.showerror("Erreur", f"Analyse RF échouée : {e}")
-
-
-def load_data_rf():
-    """
-    Chargement + enrichissement des données pour modèle Random Forest.
-    """
-    df_temp = pd.read_csv("data/donne_meteorologique.csv", usecols=["Date", "Temperature"])
-    df_temp["Date"] = pd.to_datetime(df_temp["Date"], utc=True)
-    df_temp.set_index("Date", inplace=True)
-    df_temp["Temperature"] = df_temp["Temperature"] - 273.15
-    temp_journalier = df_temp["Temperature"].resample("D").mean().rename("Temp_Moy")
-
-    df_conso = pd.read_csv("data/Power.csv", usecols=["Date", "Consommation"])
-    df_conso["Date"] = pd.to_datetime(df_conso["Date"], utc=True, errors="coerce")
-    df_conso["Consommation"] = pd.to_numeric(df_conso["Consommation"], errors="coerce")
-    df_conso.set_index("Date", inplace=True)
-    conso_journalier = df_conso["Consommation"].resample("D").mean().rename("Conso_Moy")
-
-    df = pd.concat([temp_journalier, conso_journalier], axis=1).dropna()
-
-    # Enrichissement
-    df["Jour_semaine"] = df.index.dayofweek
-    df["Mois"] = df.index.month
-    df["Temp_Moy_3j"] = df["Temp_Moy"].rolling(window=3).mean()
-    df["Conso_Lag1"] = df["Conso_Moy"].shift(1)
-    df.dropna(inplace=True)
-
-    return df
+# === Lancer l’analyse ===
+pipeline()
