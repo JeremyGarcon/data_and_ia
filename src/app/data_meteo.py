@@ -1,8 +1,7 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from tkinter import ttk, StringVar
+from tkinter import ttk, StringVar, messagebox
 from tkcalendar import DateEntry
-from tkinter import messagebox
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import os
 
@@ -11,89 +10,73 @@ from src.app.methode.clear_content import clear_content
 
 
 def create_tab_meteo(notebook):
-    tab_data = ttk.Frame(notebook)
-    notebook.add(tab_data, text="Données Météorologiques")
+    tab = ttk.Frame(notebook)
+    notebook.add(tab, text="Données Météo de 1er Génération")
 
-    file_path = "data/donnees-synop-essentielles-omm.csv"
+    file_path = "data/donne_meteorologique.csv"
     if not os.path.exists(file_path):
-        messagebox.showerror("Erreur", "Le fichier de données météorologiques n'existe pas.")
+        messagebox.showerror("Erreur", "Le fichier de données météorologiques est introuvable.")
         return
 
     try:
-        # Chargement des données
-        data = pd.read_csv(file_path, delimiter=";", encoding='ISO-8859-1', header=0)
+        df = pd.read_csv(file_path, delimiter=",", encoding="ISO-8859-1")
     except Exception as e:
         messagebox.showerror("Erreur", f"Erreur de lecture du fichier : {e}")
         return
 
-    # Vérification colonne Date
-    if "Date" not in data.columns:
-        messagebox.showerror("Erreur", "Colonne 'Date' non trouvée dans les données.")
+    if "Date" not in df.columns:
+        messagebox.showerror("Erreur", "Colonne 'Date' absente dans les données.")
         return
 
-    # Conversion des dates
-    data["Date"] = pd.to_datetime(data["Date"], errors="coerce", utc=True)
+    df["Date"] = pd.to_datetime(df["Date"], errors="coerce", utc=True)
 
-    # Interface de recherche
-    search_frame = ttk.Frame(tab_data)
+    # Interface de recherche par date
+    search_frame = ttk.Frame(tab)
     search_frame.pack(fill="x", pady=10)
 
-    ttk.Label(search_frame, text="Rechercher par date (Calendrier) :").pack(side="left", padx=5)
-
-    search_var = StringVar()
-    date_entry = DateEntry(search_frame, textvariable=search_var, date_pattern="yyyy-mm-dd")
+    ttk.Label(search_frame, text="Rechercher par date :").pack(side="left", padx=5)
+    date_var = StringVar()
+    date_entry = DateEntry(search_frame, textvariable=date_var, date_pattern="yyyy-mm-dd")
     date_entry.pack(side="left", padx=5)
 
-    content_frame = ttk.Frame(tab_data)
+    content_frame = ttk.Frame(tab)
     content_frame.pack(fill="both", expand=True)
 
-    # Recherche par date
     def search_data():
-        selected_date = search_var.get()
-        if selected_date:
-            filtered_data = data[data["Date"].dt.strftime('%Y-%m-%d') == selected_date]
-            if filtered_data.empty:
+        date = date_var.get()
+        if date:
+            result = df[df["Date"].dt.strftime("%Y-%m-%d") == date]
+            if result.empty:
                 messagebox.showinfo("Information", "Aucune donnée trouvée pour cette date.")
-            else:
-                update_treeview(filtered_data, content_frame)
+            update_treeview(result, content_frame)
         else:
             messagebox.showinfo("Information", "Veuillez sélectionner une date.")
 
-    # Affichage du graphique température
-    def display_data_meteo(content_frame):
+    def display_graph():
         clear_content(content_frame)
         try:
-            col_date = "Date"
-
-            # Recherche automatique d'une colonne de température
+            # Trouver la première colonne contenant "température"
             temp_cols = "Temperature"
             if not temp_cols:
-                messagebox.showerror("Erreur", "Aucune colonne contenant 'Température' trouvée.")
-                update_treeview(data, content_frame)
+                messagebox.showerror("Erreur", "Aucune colonne de température trouvée.")
+                update_treeview(df, content_frame)
                 return
 
-            col_temp = temp_cols # Première colonne contenant "Température"
+            temp_col = temp_cols
+            temp_df = df[["Date", temp_col]].dropna().copy()
+            temp_df.set_index("Date", inplace=True)
 
-            temp_data = data[[col_date, col_temp]].dropna().copy()
-            temp_data.set_index(col_date, inplace=True)
+            daily = temp_df.resample("D")[temp_col].agg(["mean", "min", "max"])
 
-            if not pd.api.types.is_datetime64_any_dtype(temp_data.index):
-                messagebox.showerror("Erreur", "La colonne 'Date' n'est pas au bon format.")
+            if daily.empty:
+                messagebox.showinfo("Information", "Aucune donnée pour le graphique.")
+                update_treeview(df, content_frame)
                 return
 
-            # Regroupement par jour
-            daily_data = temp_data.resample("D")[col_temp].agg(["mean", "min", "max"])
-
-            if daily_data.empty:
-                messagebox.showinfo("Information", "Aucune donnée trouvée pour le graphique.")
-                update_treeview(data, content_frame)
-                return
-
-            # Création du graphique
             fig, ax = plt.subplots(figsize=(12, 6))
-            daily_data["mean"].plot(ax=ax, label="Moyenne", marker="o", linestyle="-")
-            daily_data["min"].plot(ax=ax, label="Min", linestyle="--")
-            daily_data["max"].plot(ax=ax, label="Max", linestyle="--")
+            daily["mean"].plot(ax=ax, label="Moyenne", marker="o")
+            daily["min"].plot(ax=ax, label="Min", linestyle="--")
+            daily["max"].plot(ax=ax, label="Max", linestyle="--")
 
             ax.set_title("Température quotidienne")
             ax.set_xlabel("Date")
@@ -106,13 +89,12 @@ def create_tab_meteo(notebook):
             canvas.get_tk_widget().pack(fill="both", expand=True)
 
         except Exception as e:
-            messagebox.showerror("Erreur", f"Erreur lors de l'affichage du graphique : {e}")
-            update_treeview(data, content_frame)
+            messagebox.showerror("Erreur", f"Erreur d'affichage du graphique : {e}")
+            update_treeview(df, content_frame)
 
     # Boutons
     ttk.Button(search_frame, text="Rechercher", command=search_data).pack(side="left", padx=5)
-    ttk.Button(search_frame, text="Graphique", command=lambda: display_data_meteo(content_frame)).pack(side="left", padx=5)
-    ttk.Button(search_frame, text="Tableau", command=lambda: update_treeview(data, content_frame)).pack(side="left", padx=5)
+    ttk.Button(search_frame, text="Graphique", command=display_graph).pack(side="left", padx=5)
+    ttk.Button(search_frame, text="Tableau", command=lambda: update_treeview(df, content_frame)).pack(side="left", padx=5)
 
-    # Affichage initial des données dans le tableau
-    update_treeview(data, content_frame)
+    update_treeview(df, content_frame)

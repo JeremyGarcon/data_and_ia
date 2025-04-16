@@ -11,7 +11,7 @@ from src.app.methode.clear_content import clear_content
 
 def create_tab_power(notebook):
     tab_data = ttk.Frame(notebook)
-    notebook.add(tab_data, text="Données de Consommation Energétique")
+    notebook.add(tab_data, text="Données de Consommation Energétique de 1er Génération")
 
     file_path = "data/Power.csv"
     if not os.path.exists(file_path):

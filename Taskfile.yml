@@ -30,3 +30,21 @@ tasks:
     cmds:
       - bash -c "if [ -d 'env_app' ]; then rm -rf env_app; else echo 'L'environnement python n'existe pas'; fi"
     desc: Supprime l'environnement virtuel s'il existe.
+
+  build:
+    cmds:
+      - bash -c "if [ -d 'env_app' ]; then source env_app/bin/activate && pyinstaller --onefile --add-data 'src/app/*:src/app' --hidden-import='PIL._tkinter_finder' --distpath dist --workpath build main.py; else echo 'L'environnement virtuel n'existe pas'; fi"
+    desc: Compile l'application avec PyInstaller dans un exécutable unique et place les fichiers de construction dans les répertoires dist et build.
+
+  destroy_build:
+    cmds:
+      # Supprime les répertoires dist et build créés par PyInstaller
+      - bash -c "rm -rf dist/*;"
+      - bash -c "rm -rf build/*;"
+    desc: Supprime les répertoires 'dist' et 'build' créés lors du processus de construction.
+
+  run_build:
+    cmds:
+      # Exécute l'exécutable généré dans le répertoire dist
+      - bash -c "if [ -f 'dist/main' ]; then ./dist/main; else echo 'L'exécutable n'existe pas'; fi"
+    desc: Exécute l'exécutable généré par PyInstaller situé dans le répertoire dist.

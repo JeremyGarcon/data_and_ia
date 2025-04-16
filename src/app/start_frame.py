@@ -80,7 +80,7 @@ def view_data(app, main_frame):
     # Configure the main window
     app.title("DATA - AI Project")
     app.geometry("1024x820")
-    app.resizable(True, True)
+    app.resizable(False, False)
 
     main_frame.pack_forget()
 

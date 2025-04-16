@@ -1,109 +1,129 @@
 import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
 from sklearn.linear_model import LinearRegression
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor
 from sklearn.metrics import mean_squared_error, r2_score
 from sklearn.model_selection import train_test_split
-import numpy as np
 
-import matplotlib.pyplot as plt
-
-def charger_et_preparer_donnees(temp_csv, conso_csv,
-                                colonne_date="Date", colonne_temp="Temperature", colonne_conso="Consommation",
-                                date_debut="2022-01-01", date_fin="2022-09-25"):
-    # Charger température
-    df_temp = pd.read_csv(temp_csv)
-    df_temp[colonne_date] = pd.to_datetime(df_temp[colonne_date], errors="coerce", utc=True)
+# === 1. Chargement et préparation des données (12H) ===
+def charger_donnees_12h(temp_csv, conso_csv,
+                        colonne_date="Date", colonne_temp="Temperature", colonne_conso="Consommation",
+                        date_debut="2022-01-01", date_fin="2022-09-30"):
+    # Température
+    df_temp = pd.read_csv(temp_csv, usecols=[colonne_date, colonne_temp])
+    df_temp[colonne_date] = pd.to_datetime(df_temp[colonne_date], utc=True)
     df_temp = df_temp[(df_temp[colonne_date] >= date_debut) & (df_temp[colonne_date] < date_fin)]
     df_temp.set_index(colonne_date, inplace=True)
-    if df_temp[colonne_temp].max() > 100:  # Vérifie si les températures sont en Kelvin
-        df_temp[colonne_temp] = df_temp[colonne_temp]   # Convertir Kelvin en Celsius
-    temp_journalier = df_temp[colonne_temp].resample("D").mean().rename("Temp_Moy")
+    df_temp[colonne_temp] = df_temp[colonne_temp] 
+    temp_12h = df_temp[colonne_temp].resample("12H").mean().rename("Temp_Moy")
 
-    # Charger consommation
-    df_conso = pd.read_csv(conso_csv)
-    df_conso[colonne_date] = pd.to_datetime(df_conso[colonne_date], errors="coerce", utc=True)
+    # Consommation
+    df_conso = pd.read_csv(conso_csv, usecols=[colonne_date, colonne_conso], sep=",", on_bad_lines="skip")
+    df_conso[colonne_date] = pd.to_datetime(df_conso[colonne_date], utc=True, errors="coerce")
     df_conso.dropna(subset=[colonne_date, colonne_conso], inplace=True)
     df_conso[colonne_conso] = pd.to_numeric(df_conso[colonne_conso], errors="coerce")
     df_conso = df_conso[(df_conso[colonne_date] >= date_debut) & (df_conso[colonne_date] < date_fin)]
     df_conso.set_index(colonne_date, inplace=True)
-    conso_journalier = df_conso[colonne_conso].resample("D").mean().rename("Conso_Moy")
+    conso_12h = df_conso[colonne_conso].resample("12H").mean().rename("Conso_Moy")
 
-    # Fusionner les deux séries
-    df_merged = pd.concat([temp_journalier, conso_journalier], axis=1).dropna()
-    return df_merged
+    # Fusion
+    df_fusion = pd.concat([temp_12h, conso_12h], axis=1).dropna()
+    return df_fusion
 
-def modele_prediction_conso(df):
+# === 2. Modèle de prédiction ===
+def modele_prediction(df):
     X = df[["Temp_Moy"]]
     y = df["Conso_Moy"]
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-    # Comparaison de plusieurs modèles
-    models = {
-        "Random Forest": RandomForestRegressor(n_estimators=100, random_state=42),
-        "Gradient Boosting": GradientBoostingRegressor(n_estimators=100, random_state=42),
-        "Linear Regression": LinearRegression()
-    }
+    modele = LinearRegression()
+    modele.fit(X_train, y_train)
 
-    best_model = None
-    best_r2 = -np.inf
+    y_pred = modele.predict(X_test)
 
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        r2 = r2_score(y_test, y_pred)
-        rmse = np.sqrt(mean_squared_error(y_test, y_pred))
-        print(f"Modèle : {name}")
-        print(f"- Coefficient R² : {r2:.2f}")
-        print(f"- RMSE : {rmse:.2f} kWh\n")
+    r2 = r2_score(y_test, y_pred)
+    rmse = np.sqrt(mean_squared_error(y_test, y_pred))
 
-        if r2 > best_r2:
-            best_r2 = r2
-            best_model = model
+    print(f"➡️ R² : {r2:.2f}")
+    print(f"➡️ RMSE : {rmse:.2f} kWh")
 
-    # Évaluation du meilleur modèle
-    y_pred = best_model.predict(X_test)
-    print("Meilleur modèle sélectionné :")
-    print(f"- Coefficient R² : {best_r2:.2f}")
-    print(f"- RMSE : {np.sqrt(mean_squared_error(y_test, y_pred)):.2f} kWh")
+    return y_test, y_pred
 
-    # Affichage du graphe
-    plt.figure(figsize=(10, 5))
-    plt.plot(y_test.index, y_test, label="Conso Réelle", marker="o")
-    plt.plot(y_test.index, y_pred, label="Conso Prédite", linestyle="--", marker="x")
-    plt.title("Prédiction de la consommation énergétique à partir de la température")
+# === 3. Visualisation des erreurs sur une courbe ===
+def plot_erreur_12h(y_test, y_pred):
+    df_resultats = pd.DataFrame({
+        "Reel": y_test,
+        "Pred": y_pred
+    }, index=y_test.index)
+
+    df_resultats["Erreur_Abs"] = np.abs(df_resultats["Reel"] - df_resultats["Pred"])
+
+    plt.figure(figsize=(14, 6))
+    plt.plot(df_resultats.index, df_resultats["Erreur_Abs"], label="Erreur absolue", color="darkorange")
+    plt.title("Erreur absolue des prédictions (chaque 12 heures)", fontsize=14)
+    plt.xlabel("Date")
+    plt.ylabel("Erreur (kWh)")
+    plt.grid(True)
+    plt.legend()
+    plt.tight_layout()
+    plt.show()
+
+# === 4. Utilisation ===
+df_12h = charger_donnees_12h(
+    temp_csv="data/donne_meteorologique.csv",
+    conso_csv="data/Power.csv",
+    date_debut="2022-01-01",
+    date_fin="2022-09-25"
+)
+
+y_test_12h, y_pred_12h = modele_prediction(df_12h)
+plot_erreur_12h(y_test_12h, y_pred_12h)
+
+
+# === Fonction pour afficher la comparaison entre la consommation réelle et prédite ===
+def plot_actual_vs_predicted_curve(y_test, y_pred):
+    plt.figure(figsize=(10, 6))
+    plt.plot(y_test.index, y_test, label="Consommation réelle", marker="o", color="blue", linestyle='-', linewidth=2)
+    plt.plot(y_test.index, y_pred, label="Consommation prédite", linestyle="--", color="red", linewidth=2)
+    plt.title("Consommation réelle vs Prédite")
     plt.xlabel("Date")
     plt.ylabel("Consommation (kWh)")
     plt.legend()
     plt.grid(True)
     plt.tight_layout()
     plt.show()
-    
-    # === Graphique : prédictions vs réalité ===
-    plt.figure(figsize=(6, 6))
-    plt.scatter(y_test, y_pred, alpha=0.7, edgecolors="k")
-    plt.plot([y_test.min(), y_test.max()], [y_test.min(), y_test.max()], "r--", lw=2, label="Idéal : y = x")
-    plt.xlabel("Consommation réelle (kWh)")
-    plt.ylabel("Consommation prédite (kWh)")
-    plt.title("Précision des prédictions")
-    plt.grid(True)
+
+# === Utilisation ===
+plot_actual_vs_predicted_curve(y_test_12h, y_pred_12h)
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+# === Fonction pour afficher une courbe sinusoïdale comparant consommation réelle vs prédite ===
+def plot_sinusoidal_comparison(y_test, y_pred):
+    plt.figure(figsize=(12, 6))
+
+    # Création d'une plage de valeurs pour une courbe sinusoïdale
+    time_index = np.arange(len(y_test))  # index des dates
+
+    # Plot de la consommation réelle (bleu)
+    plt.plot(time_index, y_test, label="Consommation réelle", color="blue", linestyle='-', linewidth=2)
+
+    # Plot de la consommation prédite (rouge)
+    plt.plot(time_index, y_pred, label="Consommation prédite", color="red", linestyle="--", linewidth=2)
+
+    # Ajouter un effet sinusoïdal pour mieux visualiser les variations
+    plt.plot(time_index, np.sin(time_index * 2 * np.pi / len(time_index)) * 10, label="Comportement cyclique simulé", color="green", linestyle=":", linewidth=2)
+
+    plt.title("Comparaison : Consommation réelle vs Prédite (Effet Sinusoïdal)")
+    plt.xlabel("Date (index temps)")
+    plt.ylabel("Consommation (kWh)")
     plt.legend()
+    plt.grid(True)
     plt.tight_layout()
     plt.show()
 
-    # Optionnel : afficher l’erreur moyenne en pourcentage
-    erreur_absolue = abs(y_test - y_pred)
-    erreur_relative_pct = (erreur_absolue / y_test) * 100
-    print(f"Erreur moyenne relative : {erreur_relative_pct.mean():.2f}%")
-
-    return best_model
-
 # === Utilisation ===
-df_fusionne = charger_et_preparer_donnees(
-    temp_csv="/home/garcon/Documents/github/data_and_ia/data/donne_meteorologique.csv",
-    conso_csv="/home/garcon/Documents/github/data_and_ia/data/Power.csv",
-    date_debut="2022-01-01",
-    date_fin="2022-09-25"
-)
-
-modele = modele_prediction_conso(df_fusionne)
+plot_sinusoidal_comparison(y_test_12h, y_pred_12h)
