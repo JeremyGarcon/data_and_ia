@@ -1,0 +1,29 @@
+# Commandes Python courantes pour la gestion des environnements virtuels
+
+# 1. Créer un environnement virtuel
+python -m venv nom_de_l_environnement
+
+# 2. Activer l'environnement virtuel
+# Sous Windows
+nom_de_l_environnement\Scripts\activate
+# Sous macOS/Linux
+source nom_de_l_environnement/bin/activate
+
+# 3. Désactiver l'environnement virtuel
+deactivate
+
+# 4. Installer des packages dans l'environnement virtuel
+pip install nom_du_package
+
+# 5. Lister les packages installés
+pip list
+
+# 6. Exporter les dépendances dans un fichier requirements.txt
+pip freeze > requirements.txt
+
+# 7. Installer les dépendances depuis un fichier requirements.txt
+pip install -r requirements.txt
+
+# 8. Supprimer un environnement virtuel (manuellement)
+# Supprimez simplement le dossier de l'environnement virtuel
+rm -rf nom_de_l_environnement
