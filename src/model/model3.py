@@ -72,8 +72,8 @@ def plot_scatter(y_test, y_pred):
 
 # === Lancement ===
 df = charger_donnees_ameliores(
-    temp_csv="/home/garcon/Documents/github/data_and_ia/data/donne_meteorologique.csv",
-    conso_csv="/home/garcon/Documents/github/data_and_ia/data/Power.csv",
+    temp_csv="data/donne_meteorologique.csv",
+    conso_csv="data/Power.csv",
     date_debut="2022-01-01",
     date_fin="2022-09-25"
 )

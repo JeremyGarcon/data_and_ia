@@ -1,124 +1,122 @@
-# Projet : Modèles d'IA avec Scikit-learn  
-
-Ce projet est un **MVP (Minimum Viable Product)** en Python utilisant **Scikit-learn** pour analyser les relations entre la consommation énergétique et les données météorologiques. Il inclut des visualisations et des analyses pertinentes.  
 
 ---
 
-## 📂 Structure du projet  
+# 🧠 Projet : Modèles d'IA avec Scikit-learn  
+
+Ce projet est un **MVP (Minimum Viable Product)** en Python qui explore la relation entre la **consommation énergétique** et les **données météorologiques**. Il s'appuie sur **Scikit-learn** pour modéliser les données et **Tkinter** pour l'interface graphique.  
+
+---
+
+## 📁 Structure du projet  
 
 ```plaintext
- .
-├── data/                  # Données nécessaires pour l'analyse et l'entraînement
-├── src/                   # Scripts Python pour l'analyse, la visualisation et les modèles
-│   ├── app/               # Scripts pour la gestion des données et des modèles
-│   ├── view_data/         # Scripts pour visualiser les données
-│   ├── main.py            # Point d'entrée principal
-├── requirements.txt       # Dépendances Python
-├── Taskfile.yml           # Automatisation des tâches
-└── README.md              # Documentation du projet
-```  
+.
+├── data/                  # Données d'entrée (consommation et météo)
+├── src/                   # Code source principal
+│   ├── app/               # Scripts pour interface et analyse
+│   └── view_data/         # Visualisation des données brutes
+├── main.py                # Point d'entrée de l'application
+├── requirements.txt       # Liste des dépendances
+├── Taskfile.yml           # Automatisation des tâches avec Task
+└── README.md              # Documentation
+```
 
 ---
 
-## ✨ Fonctionnalités principales  
+## ⚙️ Fonctionnalités principales  
 
-### 1. Analyse des données  
-- Visualisation des tendances de consommation énergétique et des températures.  
-- Calcul des statistiques (moyenne, minimum, maximum).  
+### 🔍 Analyse des données  
+- Visualisation de la consommation d’énergie et des températures.  
+- Statistiques par jour, graphiques, courbes d’évolution.
 
-### 2. Modélisation IA  
-- Modèle de régression linéaire avec **Scikit-learn**.  
-- Prédiction de la consommation énergétique en fonction des températures.  
+### 🤖 Modélisation IA  
+- Régression linéaire avec **Scikit-learn**.  
+- Prédiction de la consommation moyenne à partir de la température moyenne.  
+- Affichage des performances du modèle (R², RMSE).  
 
-### 3. Visualisation  
-- Graphiques interactifs pour explorer les données et les résultats.  
-
----
-
-## 🚀 Installation  
-
-### Étape 1 : Cloner le dépôt  
-```bash  
-git clone https://github.com/JeremyGarcon/data_and_ia.git 
-cd data_and_ia  
-```  
-
-### Étape 2 : Lancer l'application  
-```bash  
-task run  
-```  
+### 📊 Visualisation interactive  
+- Interface Tkinter simple et intuitive.  
+- Affichage de résultats dans des onglets.  
+- Accès au contenu du README depuis l’interface.  
 
 ---
 
-## 🛠️ Installation de Task  
+## 🚀 Lancer l'application  
+
+### 1. Cloner le dépôt  
+```bash
+git clone https://github.com/JeremyGarcon/data_and_ia.git
+cd data_and_ia
+```
+
+### 2. Lancer l'application avec Task  
+```bash
+task run
+```
+
+---
+
+## 🛠️ Installation de Task (si nécessaire)
 
 ### Sous Linux  
-1. Téléchargez Task :  
-   ```bash  
-   sudo snap install task --classic
-   ```  
-2. Vérifiez l'installation :  
-   ```bash  
-   task --version  
-   ```  
+```bash
+sudo snap install task --classic
+```
 
-1. Suivez les instructions d'installation sur [la page officielle de Task](https://taskfile.dev/installation/).  
-
-4. Vérifiez l'installation :  
-   ```cmd  
-   task --version  
-   ```  
+### Ou consulter la doc officielle 👉 [taskfile.dev](https://taskfile.dev/installation/)
 
 ---
 
-## 📊 Visualisation des données  
+## 🔄 Tâches disponibles (via `Taskfile.yml`)  
 
-- **Pensez à créer l'environnement avant**  
-   ```bash  
-   task create_env  
-   ```  
+### 🔧 Environnement virtuel  
+- **Créer un environnement virtuel + installer les dépendances** :  
+  ```bash
+  task create_env
+  ```
 
-- **Consommation énergétique (MWh) de 2022** :  
-   ```bash  
-   task view_power  
-   ```  
-
-- **Températures de 2022** :  
-   ```bash  
-   task view_temperature  
-   ```  
+- **Supprimer l’environnement virtuel** :  
+  ```bash
+  task delete_env
+  ```
 
 ---
 
-## ⚙️ Automatisation avec Taskfile  
+### 📊 Visualiser les données  
+- **Consommation énergétique (MWh)** :  
+  ```bash
+  task view_power
+  ```
 
-Le fichier `Taskfile.yml` utilise **version: '3'** pour automatiser les tâches courantes :  
+- **Températures (°C)** :  
+  ```bash
+  task view_temperature
+  ```
 
-- **Créer l'environnement virtuel** :  
-   ```bash  
-   task create_env  
-   ```  
+---
 
-- **Supprimer l'environnement virtuel** :  
-   ```bash  
-   task delete_env  
-   ```  
+### ⚙️ Construction de l'exécutable  
+- **Créer un exécutable avec PyInstaller** :  
+  ```bash
+  task build
+  ```
 
-- **Lancer l'application** :  
-   ```bash  
-   task run  
-   ```  
+- **Supprimer les fichiers de build (dist/, build/)** :  
+  ```bash
+  task destroy_build
+  ```
+
+- **Lancer l'exécutable compilé** :  
+  ```bash
+  task run_build
+  ```
 
 ---
 
 ## 🎯 Objectifs futurs  
 
-- Ajouter des modèles avancés (forêts aléatoires, réseaux neuronaux).  
-- Intégrer une interface utilisateur Web (React).  
-- Étendre l'analyse à d'autres périodes et intégrer plus de données météorologiques.  
-- Ajouter une base de données PostgreSQL.  
+- Ajouter d'autres Data Pour élargir nos test des différent model  
+- Créer une interface Web avec **React(Next.Js)**.  
+- Connecter une **base PostgreSQL** pour stocker les données.  
 
 ---
-
-Ce projet est une première étape pour démontrer l'utilisation de l'IA dans l'analyse des données énergétiques et météorologiques.  
-
