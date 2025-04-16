@@ -11,7 +11,7 @@ data_and_ia-main/ ├── env/ # Environnement virtuel Python ├── src/ �
 
 - Python 3.10 ou plus recommandé
 - pip
-- (Optionnel) virtualenv
+-virtualenv
 
 ## 🚀 Installation
 
