@@ -50,24 +50,7 @@ def modele_prediction(df):
 
     return y_test, y_pred
 
-# === 3. Visualisation des erreurs sur une courbe ===
-def plot_erreur_12h(y_test, y_pred):
-    df_resultats = pd.DataFrame({
-        "Reel": y_test,
-        "Pred": y_pred
-    }, index=y_test.index)
 
-    df_resultats["Erreur_Abs"] = np.abs(df_resultats["Reel"] - df_resultats["Pred"])
-
-    plt.figure(figsize=(14, 6))
-    plt.plot(df_resultats.index, df_resultats["Erreur_Abs"], label="Erreur absolue", color="darkorange")
-    plt.title("Erreur absolue des prédictions (chaque 12 heures)", fontsize=14)
-    plt.xlabel("Date")
-    plt.ylabel("Erreur (kWh)")
-    plt.grid(True)
-    plt.legend()
-    plt.tight_layout()
-    plt.show()
 
 # === 4. Utilisation ===
 df_12h = charger_donnees_12h(
@@ -78,24 +61,8 @@ df_12h = charger_donnees_12h(
 )
 
 y_test_12h, y_pred_12h = modele_prediction(df_12h)
-plot_erreur_12h(y_test_12h, y_pred_12h)
 
 
-# === Fonction pour afficher la comparaison entre la consommation réelle et prédite ===
-def plot_actual_vs_predicted_curve(y_test, y_pred):
-    plt.figure(figsize=(10, 6))
-    plt.plot(y_test.index, y_test, label="Consommation réelle", marker="o", color="blue", linestyle='-', linewidth=2)
-    plt.plot(y_test.index, y_pred, label="Consommation prédite", linestyle="--", color="red", linewidth=2)
-    plt.title("Consommation réelle vs Prédite")
-    plt.xlabel("Date")
-    plt.ylabel("Consommation (kWh)")
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
-
-# === Utilisation ===
-plot_actual_vs_predicted_curve(y_test_12h, y_pred_12h)
 
 
 import matplotlib.pyplot as plt

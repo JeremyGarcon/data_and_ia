@@ -14,6 +14,8 @@ from src.app.data_meteo import create_tab_meteo
 from src.app.data_power import create_tab_power
 from src.app.view_readme import read_markdown_file
 from src.app.model_view import view_model_1
+from src.app.model_view2 import view_model_2
+from src.app.model_view3 import view_model_3
 # from src.app.model_view import open_model_view
 
 
@@ -118,12 +120,25 @@ def open_model_view(app, main_frame):
     notebook = ttk.Notebook(model_frame)
     notebook.pack(fill='both', expand=True)
 
-    # Onglet modèle IA
-    tab_model = ttk.Frame(notebook)
-    notebook.add(tab_model, text="Modèle IA")
+    # Onglet modèle IA 1er Génération
+    tab_model_1 = ttk.Frame(notebook)
+    notebook.add(tab_model_1, text="Modèle IA 1er Génération")
+    
+    # Onglet modèle IA 2ème Génération
+    tab_model_2 = ttk.Frame(notebook)
+    notebook.add(tab_model_2, text="Modèle IA 2ème Génération")
+    
+    tab_model_3 = ttk.Frame(notebook)
+    notebook.add(tab_model_3, text="Modèle IA 3ème Génération")
+    
 
     # Affiche le modèle dans l'onglet
-    view_model_1(tab_model)
+    view_model_1(tab_model_1)
+    
+    view_model_2(tab_model_2)
+    
+  
+    view_model_3(tab_model_3)
 
     # Bouton retour
     back_btn = ttk.Button(model_frame, text="⬅ Retour au menu principal", command=lambda: return_to_main(app, model_frame))
